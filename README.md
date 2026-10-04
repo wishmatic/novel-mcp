@@ -1,7 +1,5 @@
 # Novel MCP
 
-<img src="docs/images/logo.webp" alt="Novel MCP Logo" width="128">
-
 A thin MCP wrapper around NovelAI's image generation API.
 
 ## Features
