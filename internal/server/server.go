@@ -11,17 +11,23 @@ import (
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/cors"
 	"github.com/modelcontextprotocol/go-sdk/mcp"
-	"github.com/wishmatic/go-mcp/internal/auth"
-	"github.com/wishmatic/go-mcp/internal/config"
-	mcpServer "github.com/wishmatic/go-mcp/internal/mcp"
+	"github.com/wishmatic/novel-mcp/internal/auth"
+	"github.com/wishmatic/novel-mcp/internal/config"
+	"github.com/wishmatic/novel-mcp/internal/format"
+	mcpServer "github.com/wishmatic/novel-mcp/internal/mcp"
+	"github.com/wishmatic/novel-mcp/internal/novelai"
+	"github.com/wishmatic/novel-mcp/internal/resolve"
+	"github.com/wishmatic/novel-mcp/internal/sourcemap"
+	"github.com/wishmatic/novel-mcp/internal/store"
 	"go.uber.org/zap"
 )
 
-const writeTimeout = 60 * time.Second
+const writeTimeout = 10 * time.Minute
 
 type Server struct {
 	cfg    config.Config
 	log    *zap.Logger
+	files  *store.Client
 	router *chi.Mux
 	http   *http.Server
 }
@@ -35,9 +41,30 @@ func New(cfg config.Config, log *zap.Logger) (*Server, error) {
 		return nil, err
 	}
 
-	mcpSrv, err := mcpServer.New(mcpServer.Deps{Log: log})
+	publicBase, err := cfg.PublicBase()
 	if err != nil {
-		return nil, fmt.Errorf("build mcp server: %w", err)
+		return nil, err
+	}
+
+	if publicBase == nil {
+		return nil, fmt.Errorf("PUBLIC_HOST is required")
+	}
+
+	if cfg.FilesDir == "" {
+		return nil, fmt.Errorf("FILES_DIR must not be empty")
+	}
+
+	outputFormat, err := outputFormatFrom(cfg)
+	if err != nil {
+		return nil, err
+	}
+
+	files, err := store.New(store.Config{
+		Dir:        cfg.FilesDir,
+		PublicBase: publicBase,
+	}, log)
+	if err != nil {
+		return nil, fmt.Errorf("configure file storage: %w", err)
 	}
 
 	router := chi.NewRouter()
@@ -54,12 +81,46 @@ func New(cfg config.Config, log *zap.Logger) (*Server, error) {
 		MaxAge:           300,
 	}))
 
-	handler := mcp.NewStreamableHTTPHandler(func(*http.Request) *mcp.Server {
+	files.Register(router)
+
+	log.Info("local files enabled", zap.String("dir", cfg.FilesDir))
+	log.Warn("stored files are readable by anyone with the URL")
+
+	sources, err := sourcemap.Parse(cfg.ImageURLMap)
+	if err != nil {
+		return nil, fmt.Errorf("IMAGE_URL_MAP: %w", err)
+	}
+
+	resolver, err := resolve.New(files, publicBase.String(), sources)
+	if err != nil {
+		return nil, fmt.Errorf("build image resolver: %w", err)
+	}
+
+	var novelaiClient *novelai.Client
+	if cfg.NovelAIAPIKey != "" {
+		novelaiClient = novelai.New(novelai.DefaultBaseURL, cfg.NovelAIAPIKey)
+
+		log.Info("novelai enabled", zap.String("base_url", novelai.DefaultBaseURL))
+	}
+
+	mcpSrv, err := mcpServer.New(mcpServer.Clients{
+		Log:                 log,
+		NovelAI:             novelaiClient,
+		Store:               files,
+		Resolver:            resolver,
+		DefaultOutputFormat: outputFormat,
+	})
+	if err != nil {
+		return nil, fmt.Errorf("build mcp server: %w", err)
+	}
+
+	mcpHandler := mcp.NewStreamableHTTPHandler(func(r *http.Request) *mcp.Server {
 		return mcpSrv
 	}, nil)
 
-	router.Mount("/mcp", auth.Middleware(log, cfg.APIKey)(handler))
+	protected := auth.Middleware(log, cfg.APIKey)(mcpHandler)
 
+	router.Mount("/mcp", protected)
 	router.Get("/healthz", func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
 		_, _ = w.Write([]byte("ok"))
@@ -68,6 +129,7 @@ func New(cfg config.Config, log *zap.Logger) (*Server, error) {
 	return &Server{
 		cfg:    cfg,
 		log:    log,
+		files:  files,
 		router: router,
 		http: &http.Server{
 			Addr:              cfg.Addr(),
@@ -78,6 +140,19 @@ func New(cfg config.Config, log *zap.Logger) (*Server, error) {
 			IdleTimeout:       60 * time.Second,
 		},
 	}, nil
+}
+
+func outputFormatFrom(cfg config.Config) (format.Format, error) {
+	if cfg.DefaultOutput == "" {
+		return format.Default, nil
+	}
+
+	format, err := format.Parse(cfg.DefaultOutput)
+	if err != nil {
+		return "", fmt.Errorf("OUTPUT_FORMAT: %w", err)
+	}
+
+	return format, nil
 }
 
 func (s *Server) Run() error {

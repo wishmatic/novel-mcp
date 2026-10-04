@@ -8,7 +8,6 @@ import (
 	"testing"
 
 	"github.com/modelcontextprotocol/go-sdk/mcp"
-	"github.com/wishmatic/go-mcp/internal/config"
 	"go.uber.org/zap"
 )
 
@@ -24,8 +23,48 @@ func (t bearerRoundTripper) RoundTrip(req *http.Request) (*http.Response, error)
 	return t.base.RoundTrip(clone)
 }
 
-func TestMCPOverHTTPListsNoTools(t *testing.T) {
-	srv, err := New(config.Config{Port: 8080, APIKey: "server-key"}, zap.NewNop())
+func TestMCPOverHTTPListsTheNovelAITool(t *testing.T) {
+	cfg := testConfig(t)
+	cfg.NovelAIAPIKey = "sk-test"
+
+	srv, err := New(cfg, zap.NewNop())
+	if err != nil {
+		t.Fatalf("New() error: %v", err)
+	}
+
+	api := httptest.NewServer(srv.router)
+	t.Cleanup(api.Close)
+
+	session, err := mcp.NewClient(&mcp.Implementation{Name: "test", Version: "v0"}, nil).Connect(
+		context.Background(),
+		&mcp.StreamableClientTransport{
+			Endpoint: api.URL + "/mcp",
+			HTTPClient: &http.Client{Transport: bearerRoundTripper{
+				token: "server-key",
+				base:  http.DefaultTransport,
+			}},
+			DisableStandaloneSSE: true,
+		},
+		nil,
+	)
+	if err != nil {
+		t.Fatalf("Connect() error: %v", err)
+	}
+
+	t.Cleanup(func() { _ = session.Close() })
+
+	tools, err := session.ListTools(context.Background(), nil)
+	if err != nil {
+		t.Fatalf("ListTools() error: %v", err)
+	}
+
+	if len(tools.Tools) != 1 || tools.Tools[0].Name != "novelai" {
+		t.Errorf("tools = %v, want just novelai", tools.Tools)
+	}
+}
+
+func TestMCPOverHTTPListsNoToolsWithoutANovelAIKey(t *testing.T) {
+	srv, err := New(testConfig(t), zap.NewNop())
 	if err != nil {
 		t.Fatalf("New() error: %v", err)
 	}
@@ -57,12 +96,12 @@ func TestMCPOverHTTPListsNoTools(t *testing.T) {
 	}
 
 	if len(tools.Tools) != 0 {
-		t.Errorf("tools = %v, want none until one is registered", tools.Tools)
+		t.Errorf("tools = %v, want none without NOVELAI_API_KEY", tools.Tools)
 	}
 }
 
 func TestMCPRejectsUnauthenticatedRequests(t *testing.T) {
-	srv, err := New(config.Config{Port: 8080, APIKey: "server-key"}, zap.NewNop())
+	srv, err := New(testConfig(t), zap.NewNop())
 	if err != nil {
 		t.Fatalf("New() error: %v", err)
 	}

@@ -1,60 +1,91 @@
 package mcp
 
 import (
-	"context"
+	"slices"
+	"strings"
 	"testing"
 
-	"github.com/modelcontextprotocol/go-sdk/mcp"
-	"go.uber.org/zap"
+	"github.com/wishmatic/novel-mcp/internal/novelai"
 )
 
-func TestNewBuildsAServer(t *testing.T) {
-	srv, err := New(Deps{Log: zap.NewNop()})
+func TestNewRegistersTools(t *testing.T) {
+	srv, err := New(Clients{Log: zapNop()})
 	if err != nil {
-		t.Fatalf("New() error: %v", err)
+		t.Fatalf("New() unexpected error: %v", err)
 	}
 
 	if srv == nil {
-		t.Fatal("New() = nil, want a server")
+		t.Fatal("New() returned nil server")
 	}
 }
 
-func TestServerOverASession(t *testing.T) {
-	srv, err := New(Deps{Log: zap.NewNop()})
+func TestServerInfo(t *testing.T) {
+	srv, err := New(Clients{Log: zapNop()})
 	if err != nil {
 		t.Fatalf("New() error: %v", err)
 	}
 
-	ctx := context.Background()
-	serverTransport, clientTransport := mcp.NewInMemoryTransports()
+	info := connectSession(t, srv).InitializeResult().ServerInfo
+	if info.Name != "novel-mcp" || info.Version != version {
+		t.Errorf("server info = %+v, want novel-mcp %s", info, version)
+	}
+}
 
-	serverSession, err := srv.Connect(ctx, serverTransport, nil)
+func TestToolRegistration(t *testing.T) {
+	tests := []struct {
+		name    string
+		novelai *novelai.Client
+		want    []string
+	}{
+		{
+			name:    "novelai only",
+			novelai: novelai.New("http://example.com", "sk"),
+			want:    []string{"novelai"},
+		},
+		{
+			name: "no backend",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			srv, err := New(Clients{
+				Log:     zapNop(),
+				NovelAI: tt.novelai,
+			})
+			if err != nil {
+				t.Fatalf("New() error: %v", err)
+			}
+
+			got := toolNames(t, srv)
+			want := append([]string(nil), tt.want...)
+
+			slices.Sort(got)
+			slices.Sort(want)
+
+			if !slices.Equal(got, want) {
+				t.Errorf("tools = %v, want %v", got, want)
+			}
+		})
+	}
+}
+
+func TestGenerationDescriptionsDocumentTheInitImage(t *testing.T) {
+	srv, err := New(Clients{
+		Log:     zapNop(),
+		NovelAI: novelai.New("http://example.com", "sk"),
+	})
 	if err != nil {
-		t.Fatalf("server Connect() error: %v", err)
+		t.Fatalf("New() error: %v", err)
 	}
 
-	t.Cleanup(func() { _ = serverSession.Close() })
+	for _, name := range []string{"novelai"} {
+		desc := toolByName(t, srv, name).Description
 
-	session, err := mcp.NewClient(&mcp.Implementation{Name: "test", Version: "v0"}, nil).Connect(
-		ctx, clientTransport, nil,
-	)
-	if err != nil {
-		t.Fatalf("client Connect() error: %v", err)
-	}
-
-	t.Cleanup(func() { _ = session.Close() })
-
-	info := session.InitializeResult().ServerInfo
-	if info.Name != "go-mcp" || info.Version != version {
-		t.Errorf("server info = %+v, want go-mcp %s", info, version)
-	}
-
-	tools, err := session.ListTools(ctx, nil)
-	if err != nil {
-		t.Fatalf("ListTools() error: %v", err)
-	}
-
-	if len(tools.Tools) != 0 {
-		t.Errorf("tools = %v, want none until one is registered", tools.Tools)
+		for _, want := range []string{"init_image_url", "default to 512"} {
+			if !strings.Contains(desc, want) {
+				t.Errorf("%s description %q does not mention %q", name, desc, want)
+			}
+		}
 	}
 }

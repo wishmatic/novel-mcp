@@ -2,26 +2,28 @@ package mcp
 
 import (
 	"github.com/modelcontextprotocol/go-sdk/mcp"
-	"go.uber.org/zap"
+	"github.com/wishmatic/novel-mcp/internal/format"
 )
-
-type Deps struct {
-	Log *zap.Logger
-}
 
 const version = "0.1.0"
 
-func New(deps Deps) (*mcp.Server, error) {
+func New(clients Clients) (*mcp.Server, error) {
+	if clients.DefaultOutputFormat == "" {
+		clients.DefaultOutputFormat = format.Default
+	}
+
 	srv := mcp.NewServer(&mcp.Implementation{
-		Name:    "go-mcp",
+		Name:    "novel-mcp",
 		Version: version,
 	}, nil)
 
-	registerTools(srv, &handlers{log: deps.Log})
+	registerTools(srv, &clients)
 
 	return srv, nil
 }
 
-func registerTools(srv *mcp.Server, h *handlers) {
-	// No-op.
+func registerTools(srv *mcp.Server, c *Clients) {
+	if c.NovelAI != nil {
+		registerNovelAI(srv, c)
+	}
 }

@@ -13,5 +13,7 @@ docs
 bin
 dist
 *.log
+*.db
+files
 coverage.txt
 coverage.html

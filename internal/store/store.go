@@ -1,0 +1,197 @@
+package store
+
+import (
+	"context"
+	"fmt"
+	"net/url"
+	"os"
+	"path/filepath"
+	"strings"
+	"time"
+
+	"github.com/google/uuid"
+	"github.com/wishmatic/novel-mcp/internal/format"
+	"go.uber.org/zap"
+)
+
+const (
+	namespace = "i"
+	dirMode   = 0o750
+	fileMode  = 0o640
+)
+
+type Config struct {
+	Dir        string
+	PublicBase *url.URL
+}
+
+type Client struct {
+	cfg Config
+	log *zap.Logger
+}
+
+func New(cfg Config, log *zap.Logger) (*Client, error) {
+	if cfg.Dir == "" {
+		return nil, fmt.Errorf("store: a storage directory is required")
+	}
+
+	if cfg.PublicBase == nil || cfg.PublicBase.Host == "" {
+		return nil, fmt.Errorf("store: a public base URL is required")
+	}
+
+	if err := os.MkdirAll(cfg.Dir, dirMode); err != nil {
+		return nil, fmt.Errorf("store: create %s: %w", cfg.Dir, err)
+	}
+
+	return &Client{cfg: cfg, log: log}, nil
+}
+
+func (c *Client) uploadFile(ctx context.Context, data []byte, contentType string) (string, error) {
+	if err := ctx.Err(); err != nil {
+		return "", err
+	}
+
+	key := objectKey(format.ExtensionForMediaType(contentType))
+
+	path, err := c.safePath(key)
+	if err != nil {
+		return "", err
+	}
+
+	if err := writeFileAtomic(path, data); err != nil {
+		return "", fmt.Errorf("store: store %s: %w", key, err)
+	}
+
+	c.log.Info("stored image",
+		zap.String("key", key),
+		zap.String("content_type", contentType),
+		zap.Int("bytes", len(data)),
+	)
+
+	return c.url(key), nil
+}
+
+// Publish stores every image in order and returns their URLs. label names the caller in the log line a failed upload
+// writes.
+func (c *Client) Publish(
+	ctx context.Context, label string, images [][]byte, contentType string,
+) ([]string, error) {
+	urls := make([]string, 0, len(images))
+
+	for _, data := range images {
+		url, err := c.uploadFile(ctx, data, contentType)
+		if err != nil {
+			c.log.Error(label+" upload failed", zap.Error(err))
+
+			return nil, err
+		}
+
+		urls = append(urls, url)
+	}
+
+	return urls, nil
+}
+
+func (c *Client) GetObject(ctx context.Context, key string) ([]byte, error) {
+	if err := ctx.Err(); err != nil {
+		return nil, err
+	}
+
+	path, err := c.safePath(key)
+	if err != nil {
+		return nil, err
+	}
+
+	data, err := os.ReadFile(path)
+	if err != nil {
+		return nil, fmt.Errorf("store: read %s: %w", key, err)
+	}
+
+	return data, nil
+}
+
+func (c *Client) url(key string) string {
+	base := *c.cfg.PublicBase
+	base.Path = strings.TrimSuffix(base.Path, "/") + "/" + key
+
+	return base.String()
+}
+
+func objectKey(ext string) string {
+	parts := []string{namespace, time.Now().UTC().Format("2006-01"), uuid.NewString() + "." + ext}
+
+	return strings.Join(parts, "/")
+}
+
+func (c *Client) safePath(key string) (string, error) {
+	if key == "" {
+		return "", fmt.Errorf("store: empty key")
+	}
+
+	if strings.HasPrefix(key, "/") || filepath.IsAbs(key) {
+		return "", fmt.Errorf("store: key %q is absolute", key)
+	}
+
+	segments := strings.Split(key, "/")
+	if segments[0] != namespace {
+		return "", fmt.Errorf("store: key %q is outside the %s namespace", key, namespace)
+	}
+
+	for _, segment := range segments {
+		if segment == "" || segment == "." || segment == ".." {
+			return "", fmt.Errorf("store: key %q has an invalid segment", key)
+		}
+	}
+
+	full := filepath.Join(c.cfg.Dir, filepath.FromSlash(key))
+
+	rel, err := filepath.Rel(c.cfg.Dir, full)
+	if err != nil || rel == ".." || strings.HasPrefix(rel, ".."+string(filepath.Separator)) {
+		return "", fmt.Errorf("store: key %q escapes the storage directory", key)
+	}
+
+	return full, nil
+}
+
+func writeFileAtomic(path string, data []byte) error {
+	dir := filepath.Dir(path)
+	if err := os.MkdirAll(dir, dirMode); err != nil {
+		return err
+	}
+
+	tmp, err := os.CreateTemp(dir, ".tmp-*")
+	if err != nil {
+		return err
+	}
+
+	tmpName := tmp.Name()
+	defer func() {
+		if tmpName != "" {
+			_ = os.Remove(tmpName)
+		}
+	}()
+
+	if _, err := tmp.Write(data); err != nil {
+		_ = tmp.Close()
+
+		return err
+	}
+
+	if err := tmp.Chmod(fileMode); err != nil {
+		_ = tmp.Close()
+
+		return err
+	}
+
+	if err := tmp.Close(); err != nil {
+		return err
+	}
+
+	if err := os.Rename(tmpName, path); err != nil {
+		return err
+	}
+
+	tmpName = ""
+
+	return nil
+}
