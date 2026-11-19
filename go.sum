@@ -6,10 +6,14 @@ github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/gen2brain/jxl v0.2.0 h1:cXSQnfbcC0JGFzaI344VzPMbe7mh6rYc0tjPcBUsE4U=
 github.com/gen2brain/jxl v0.2.0/go.mod h1:VjJHRai/8I8Es01mULqyiOihRBOjJr1Zo+NoN/MyIwo=
+github.com/gen2brain/jxl v0.2.1 h1:74+8uw2RxUHGDVrDp+727PZ2hvAd5/psyV/mpsOQea0=
+github.com/gen2brain/jxl v0.2.1/go.mod h1:d7VMurg9ek62xfuyZyVAumFcuaQf9U8NlW57j/k5MQI=
 github.com/gen2brain/vpx v0.2.0 h1:j0qYK4A/PzUpxOEFt3QSUFG4gQpO2XsLwo+3EmjRNlE=
 github.com/gen2brain/vpx v0.2.0/go.mod h1:EVIdqguMSiapbtjDm4AWgFgYYJ4d+k8trXqjxYZ/4XE=
 github.com/gen2brain/vpx v0.2.1 h1:UD6tibcs/zlaIOKNFXeVyZuHBEaW9GYfxKSxvAN9cc8=
 github.com/gen2brain/vpx v0.2.1/go.mod h1:EVIdqguMSiapbtjDm4AWgFgYYJ4d+k8trXqjxYZ/4XE=
+github.com/gen2brain/vpx v0.2.2 h1:kRCIx6Y2LsTe8hercAfhER2QbeHYnBOetovy4pkC4V0=
+github.com/gen2brain/vpx v0.2.2/go.mod h1:EVIdqguMSiapbtjDm4AWgFgYYJ4d+k8trXqjxYZ/4XE=
 github.com/go-chi/chi/v5 v5.3.2 h1:5YQkICvTCSZ25hoRsyJazN0scjzKGiu4VAUc7H1o1nY=
 github.com/go-chi/chi/v5 v5.3.2/go.mod h1:R+tYY2hNuVUUjxoPtqUdgBqevM9s9njzkTLutVsOCto=
 github.com/go-chi/chi/v5 v5.5.0 h1:xdKQ1dJmVJsmgahrXSKhUx8NyVPzpwdlyrrQFpMPJgg=
