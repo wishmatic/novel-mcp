@@ -69,6 +69,7 @@ func TestSchemasIncludeSharedGenerationFields(t *testing.T) {
 		"init_image_url",
 		"denoising_strength",
 		"format",
+		"inline",
 		"inline_max_edge",
 		"inline_max_bytes",
 	}
@@ -150,6 +151,24 @@ func TestInlineBudgetSchema(t *testing.T) {
 			if slices.Contains(s.Required, field) {
 				t.Errorf("%s: %s must be optional, as naming no budget takes the default", tool, field)
 			}
+		}
+	}
+}
+
+func TestInlineFlagIsOptional(t *testing.T) {
+	for tool, s := range allImageSchemas() {
+		prop := s.Properties["inline"]
+		if prop == nil {
+			t.Errorf("%s: inline is missing", tool)
+			continue
+		}
+
+		if prop.Type != "boolean" {
+			t.Errorf("%s: inline type = %q, want boolean", tool, prop.Type)
+		}
+
+		if slices.Contains(s.Required, "inline") {
+			t.Errorf("%s: inline must be optional, as leaving it out returns only the URL", tool)
 		}
 	}
 }

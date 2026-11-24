@@ -23,7 +23,8 @@ func registerNovelAI(srv *mcp.Server, c *Clients) {
 	mcp.AddTool(srv, &mcp.Tool{
 		Name: "novelai",
 		Description: "Generate an image via NovelAI, synchronously: the call blocks until generation completes and " +
-			"returns the image. Pass init_image_url to transform an existing image instead of generating from " +
+			"returns its URL, attaching the image itself when inline is set. Pass init_image_url to transform an " +
+			"existing image instead of generating from " +
 			"scratch; the service downloads it (following redirects). Without an init image, width and height default " +
 			"to 512. With one, they default to the init image's own size, and when only one of them is given, the " +
 			"other keeps the init image's aspect ratio. Calls may spend Anlas on your NovelAI account.",
@@ -45,6 +46,7 @@ func (c *Clients) novelai(
 	c.Log.Debug("tool called",
 		zap.String("tool", "novelai"),
 		zap.String("format", format.String()),
+		zap.Bool("inline", in.IsInline),
 		zap.Int("inline_max_edge", in.InlineMaxEdge),
 		zap.Int("inline_max_bytes", in.InlineMaxBytes),
 		zap.String("model", in.Model),
@@ -78,7 +80,7 @@ func (c *Clients) novelai(
 
 	c.Log.Info("novelai generation finished", zap.Int("images", len(images)))
 
-	result, out, err := c.publishImages(ctx, "novelai", images, format, in.inlineBudget())
+	result, out, err := c.publishImages(ctx, "novelai", images, format, in.inlineInput)
 	if err != nil {
 		return nil, generationOutput{}, err
 	}

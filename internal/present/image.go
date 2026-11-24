@@ -32,11 +32,13 @@ type AttachmentFailure struct {
 	Err   error
 }
 
-// StoredImages presents stored images as [text(url), image, ...], one text block per image immediately before it.
+// StoredImages presents stored images as [text(url), image, ...], one text block per image immediately before it. The
+// image blocks appear only when inline is set, which is what keeps a caller that only wants URLs from paying for a
+// copy of every image.
 //
 // An image that cannot be prepared keeps its URL line and yields a note in place of its image block.
-func StoredImages(images [][]byte, urls []string, budget InlineBudget) ([]mcp.Content, []AttachmentFailure) {
-	content := make([]mcp.Content, 0, 2*len(urls))
+func StoredImages(images [][]byte, urls []string, budget InlineBudget, inline bool) ([]mcp.Content, []AttachmentFailure) {
+	content := make([]mcp.Content, 0, len(urls))
 	var failures []AttachmentFailure
 
 	budget = budget.resolved()
@@ -44,7 +46,7 @@ func StoredImages(images [][]byte, urls []string, budget InlineBudget) ([]mcp.Co
 	for i, url := range urls {
 		content = append(content, &mcp.TextContent{Text: url})
 
-		if i >= len(images) {
+		if !inline || i >= len(images) {
 			continue
 		}
 

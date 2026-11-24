@@ -179,6 +179,7 @@ func TestNovelAICallToolImageAudience(t *testing.T) {
 	result := callTool(t, srv, "novelai", map[string]any{
 		"model":  "nai-diffusion-5-full",
 		"prompt": "a cat",
+		"inline": true,
 	})
 
 	if len(result.Content) != 2 {

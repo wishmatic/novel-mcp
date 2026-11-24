@@ -11,7 +11,6 @@ import (
 
 	"github.com/modelcontextprotocol/go-sdk/mcp"
 	"github.com/wishmatic/novel-mcp/internal/format"
-	"github.com/wishmatic/novel-mcp/internal/present"
 )
 
 func TestPublishImagesReturnsURLAndImage(t *testing.T) {
@@ -20,7 +19,7 @@ func TestPublishImagesReturnsURLAndImage(t *testing.T) {
 			h := &Clients{Log: zapNop(), Store: newTestStore(t)}
 
 			result, out, err := h.publishImages(
-				context.Background(), "txt2img", [][]byte{testImagePNG(t)}, format, present.InlineBudget{},
+				context.Background(), "txt2img", [][]byte{testImagePNG(t)}, format, inlineInput{IsInline: true},
 			)
 			if err != nil {
 				t.Fatalf("publishImages(format=%s) error: %v", format, err)
@@ -55,11 +54,32 @@ func TestPublishImagesReturnsURLAndImage(t *testing.T) {
 	}
 }
 
+func TestPublishImagesReturnsOnlyTheURLByDefault(t *testing.T) {
+	h := &Clients{Log: zapNop(), Store: newTestStore(t)}
+
+	result, out, err := h.publishImages(
+		context.Background(), "txt2img", [][]byte{testImagePNG(t)}, format.PNG, inlineInput{},
+	)
+	if err != nil {
+		t.Fatalf("publishImages() error: %v", err)
+	}
+
+	if len(result.Content) != 1 {
+		t.Fatalf("content = %#v, want the URL alone", result.Content)
+	}
+
+	text, ok := result.Content[0].(*mcp.TextContent)
+	if !ok || text.Text != out.URLs[0] {
+		t.Fatalf("content[0] = %#v, want the uploaded URL as text", result.Content[0])
+	}
+}
+
 func TestPublishImagesShrinksToTheNamedBudget(t *testing.T) {
 	h := &Clients{Log: zapNop(), Store: newTestStore(t)}
 
 	result, _, err := h.publishImages(
-		context.Background(), "txt2img", [][]byte{testImagePNGAt(t, 2048)}, format.PNG, present.InlineBudget{MaxEdge: 32},
+		context.Background(), "txt2img", [][]byte{testImagePNGAt(t, 2048)}, format.PNG,
+		inlineInput{IsInline: true, InlineMaxEdge: 32},
 	)
 	if err != nil {
 		t.Fatalf("publishImages() error: %v", err)
@@ -83,7 +103,9 @@ func TestPublishImagesShrinksToTheNamedBudget(t *testing.T) {
 func TestImageContentWireShape(t *testing.T) {
 	h := &Clients{Log: zapNop(), Store: newTestStore(t)}
 
-	result, _, err := h.publishImages(context.Background(), "txt2img", [][]byte{testImagePNG(t)}, format.PNG, present.InlineBudget{})
+	result, _, err := h.publishImages(
+		context.Background(), "txt2img", [][]byte{testImagePNG(t)}, format.PNG, inlineInput{IsInline: true},
+	)
 	if err != nil {
 		t.Fatalf("publishImages() error: %v", err)
 	}
@@ -123,7 +145,7 @@ func TestPublishImagesUploadFailure(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
 	cancel()
 
-	_, _, err := h.publishImages(ctx, "txt2img", [][]byte{testImagePNG(t)}, format.PNG, present.InlineBudget{})
+	_, _, err := h.publishImages(ctx, "txt2img", [][]byte{testImagePNG(t)}, format.PNG, inlineInput{})
 	if err == nil {
 		t.Fatal("publishImages() error = nil, want the upload failure")
 	}
@@ -133,7 +155,7 @@ func TestPublishImagesConvertFailure(t *testing.T) {
 	h := &Clients{Log: zapNop(), Store: newTestStore(t)}
 
 	_, _, err := h.publishImages(
-		context.Background(), "txt2img", [][]byte{[]byte("not an image")}, format.WebP, present.InlineBudget{},
+		context.Background(), "txt2img", [][]byte{[]byte("not an image")}, format.WebP, inlineInput{},
 	)
 	if err == nil || !strings.HasPrefix(err.Error(), "txt2img:") {
 		t.Fatalf("error = %v, want a txt2img: prefix", err)

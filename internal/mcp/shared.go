@@ -10,8 +10,11 @@ import (
 )
 
 // inlineInput is the sizing of the copy of an image that rides in a tool result, which every tool returning an image
-// shares. The copy is what the caller sees in the result; the image stored at its URL is a separate file.
+// shares. The copy is what the caller sees in the result, and is attached only when IsInline asks for it; the image
+// stored at its URL is a separate file.
 type inlineInput struct {
+	IsInline bool `json:"inline,omitempty" jsonschema:"attach the image itself to this result alongside its URL, in the user's and the assistant's audience, so a vision-capable model can see it; unset returns only the URL"`
+
 	InlineMaxEdge int `json:"inline_max_edge,omitempty" jsonschema:"longest edge in pixels of the copy of the image attached to this result, which is shrunk to fit it; the image stored at its URL keeps its own size"`
 
 	InlineMaxBytes int `json:"inline_max_bytes,omitempty" jsonschema:"byte limit for the copy of the image attached to this result, which is compressed and, where that is not enough, shrunk until it fits; the image stored at its URL keeps its own size"`
@@ -28,7 +31,8 @@ type formatInput struct {
 }
 
 // generationOutput is the structured output shared by the image tools. URLs lists the stored images for structured
-// clients; the call result's content carries each URL as text alongside the image itself.
+// clients; the call result's content carries each URL as text, with the image itself beside it when the call asked for
+// it inline.
 type generationOutput struct {
 	Count int      `json:"count" jsonschema:"number of images generated"`
 	URLs  []string `json:"urls" jsonschema:"URLs for the generated images"`

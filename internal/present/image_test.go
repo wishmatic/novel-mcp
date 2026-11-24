@@ -17,6 +17,7 @@ func TestStoredImagesPairsURLsWithImages(t *testing.T) {
 		[][]byte{testPNG(t)},
 		[]string{"https://cdn.example.com/i/1.png"},
 		InlineBudget{},
+		true,
 	)
 	if len(failures) != 0 {
 		t.Fatalf("failures = %v, want none", failures)
@@ -45,11 +46,33 @@ func TestStoredImagesPairsURLsWithImages(t *testing.T) {
 	}
 }
 
+func TestStoredImagesReturnsOnlyTheURLUnlessAskedToInline(t *testing.T) {
+	content, failures := StoredImages(
+		[][]byte{testPNG(t)},
+		[]string{"https://cdn.example.com/i/1.png"},
+		InlineBudget{},
+		false,
+	)
+	if len(failures) != 0 {
+		t.Fatalf("failures = %v, want none", failures)
+	}
+
+	if len(content) != 1 {
+		t.Fatalf("content = %#v, want the URL alone", content)
+	}
+
+	text, ok := content[0].(*mcp.TextContent)
+	if !ok || text.Text != "https://cdn.example.com/i/1.png" {
+		t.Fatalf("content[0] = %#v, want the URL as text", content[0])
+	}
+}
+
 func TestStoredImagesAudience(t *testing.T) {
 	content, _ := StoredImages(
 		[][]byte{testPNG(t)},
 		[]string{"https://cdn.example.com/i/1.png"},
 		InlineBudget{},
+		true,
 	)
 
 	img, ok := content[1].(*mcp.ImageContent)
@@ -78,6 +101,7 @@ func TestStoredImagesShrinksToTheBudget(t *testing.T) {
 				[][]byte{sizedPNG(t, 2048, 1024)},
 				[]string{"https://cdn.example.com/i/1.png"},
 				tt.budget,
+				true,
 			)
 			if len(failures) != 0 {
 				t.Fatalf("failures = %v, want none", failures)
@@ -109,6 +133,7 @@ func TestStoredImagesReportsAnUnreachableByteBudget(t *testing.T) {
 		[][]byte{sizedPNG(t, 64, 64)},
 		[]string{"https://cdn.example.com/i/1.png"},
 		InlineBudget{MaxEdge: 64, MaxBytes: 1},
+		true,
 	)
 
 	if len(failures) != 1 {
@@ -126,6 +151,7 @@ func TestStoredImagesFailsSoft(t *testing.T) {
 		[][]byte{[]byte("not an image"), testPNG(t)},
 		[]string{"https://cdn.example.com/i/1.png", "https://cdn.example.com/i/2.png"},
 		InlineBudget{},
+		true,
 	)
 
 	if len(failures) != 1 || failures[0].Index != 1 {
@@ -147,7 +173,7 @@ func TestStoredImagesFailsSoft(t *testing.T) {
 }
 
 func TestStoredImagesWithoutImageData(t *testing.T) {
-	content, failures := StoredImages(nil, []string{"https://cdn.example.com/i/1.png"}, InlineBudget{})
+	content, failures := StoredImages(nil, []string{"https://cdn.example.com/i/1.png"}, InlineBudget{}, true)
 	if len(content) != 1 || len(failures) != 0 {
 		t.Fatalf("content = %d, failures = %v, want the URL alone", len(content), failures)
 	}

@@ -13,8 +13,8 @@ A thin MCP wrapper around NovelAI's image generation API.
   - Calls may spend Anlas on the account the key belongs to.
 - Not just PNG; WebP output by default, and JPEG and JXL are supported too!
   - Adjust default output with `OUTPUT_FORMAT`.
-- Every call stores the image, returns its URL as text, and attaches the image as an MCP image block
-  such that a vision-capable agent can see the returned result.
+- Every call stores the image and returns its URL as text; pass `inline: true` to attach the image as
+  an MCP image block as well, such that a vision-capable agent can see the returned result.
   - The attached copy is shrunk to a size budget the caller can raise or lower per call with
     `inline_max_edge` and `inline_max_bytes`; the stored image at its URL keeps its own size.
   - This also means that this isn't just an MCP; it also is a simple image hosting service!

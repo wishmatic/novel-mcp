@@ -23,11 +23,12 @@ an image could look like, and use the tool's own description for how each field 
 - {{STYLE_NOTES}}, for example {{STYLE_EXAMPLE}}.
 - Images come back as WebP unless the server sets `OUTPUT_FORMAT`; pass `format` (`png`, `jpeg`,
   `jxl`, or `webp`) only when the user wants a different file type.
-- Every call returns the image inline with its URL as text, in the user's and your audience, so you
-  can see it. The inline copy is shrunk to a 1024-pixel edge and 1 MiB, which is enough to look at
-  but not to read small text: raise `inline_max_edge` and `inline_max_bytes` when you need a closer
-  look, or lower them when the images are only there to confirm something worked. The image at the
-  URL itself is the full-size one.
+- Every call returns the image's URL as text. Pass `inline: true` to attach the image itself as
+  well, in the user's and your audience, so you can see it. The inline copy is shrunk to a
+  1024-pixel edge and 1 MiB, which is enough to look at but not to read small text: raise
+  `inline_max_edge` and `inline_max_bytes` when you need a closer look, or lower them when the
+  images are only there to confirm something worked. The image at the URL itself is the full-size
+  one.
 
 ## Prompting
 
