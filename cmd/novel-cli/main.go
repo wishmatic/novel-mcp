@@ -5,7 +5,7 @@ import (
 	"os"
 
 	"github.com/spf13/cobra"
-	"github.com/wishmatic/novel-mcp/internal/cli"
+	"github.com/wishmatic/novel-cli/internal/cli"
 )
 
 func main() {

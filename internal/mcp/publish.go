@@ -5,8 +5,8 @@ import (
 	"fmt"
 
 	"github.com/modelcontextprotocol/go-sdk/mcp"
-	"github.com/wishmatic/novel-mcp/internal/format"
-	"github.com/wishmatic/novel-mcp/internal/present"
+	"github.com/wishmatic/novel-cli/internal/format"
+	"github.com/wishmatic/novel-cli/internal/present"
 	"go.uber.org/zap"
 )
 

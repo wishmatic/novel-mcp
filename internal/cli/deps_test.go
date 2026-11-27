@@ -5,10 +5,10 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/wishmatic/novel-mcp/internal/config"
-	"github.com/wishmatic/novel-mcp/internal/credential"
-	"github.com/wishmatic/novel-mcp/internal/novelai"
-	"github.com/wishmatic/novel-mcp/internal/resolve"
+	"github.com/wishmatic/novel-cli/internal/config"
+	"github.com/wishmatic/novel-cli/internal/credential"
+	"github.com/wishmatic/novel-cli/internal/novelai"
+	"github.com/wishmatic/novel-cli/internal/resolve"
 )
 
 func TestWithDefaultsFillsTheStreams(t *testing.T) {

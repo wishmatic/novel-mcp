@@ -5,7 +5,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/wishmatic/novel-mcp/internal/format"
+	"github.com/wishmatic/novel-cli/internal/format"
 )
 
 func TestOutputFormatUsesTheFlag(t *testing.T) {

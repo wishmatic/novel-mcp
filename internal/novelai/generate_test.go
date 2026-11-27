@@ -6,7 +6,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/wishmatic/novel-mcp/internal/format"
+	"github.com/wishmatic/novel-cli/internal/format"
 )
 
 func initImagePNG(t *testing.T, width, height int) []byte {

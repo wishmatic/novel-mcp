@@ -1,4 +1,4 @@
-module github.com/wishmatic/novel-mcp
+module github.com/wishmatic/novel-cli
 
 go 1.27.0
 

@@ -9,8 +9,8 @@ import (
 	"github.com/spf13/cobra"
 	"golang.org/x/term"
 
-	"github.com/wishmatic/novel-mcp/internal/cli"
-	"github.com/wishmatic/novel-mcp/internal/credential"
+	"github.com/wishmatic/novel-cli/internal/cli"
+	"github.com/wishmatic/novel-cli/internal/credential"
 )
 
 const maxAPIKeyBytes = 4096

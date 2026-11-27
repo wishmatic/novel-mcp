@@ -1,4 +1,4 @@
-# Novel MCP
+# Novel CLI and MCP
 
 A thin MCP wrapper around NovelAI's image generation API.
 
@@ -47,7 +47,7 @@ All other configuration is optional but strongly recommended; see [.env.example]
 `novel-cli` also generates images without the server:
 
 ```sh
-go install github.com/wishmatic/novel-mcp/cmd/novel-cli@latest
+go install github.com/wishmatic/novel-cli/cmd/novel-cli@latest
 ```
 
 Then store your NovelAI key once:

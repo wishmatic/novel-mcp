@@ -5,7 +5,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/wishmatic/novel-mcp/internal/novelai"
+	"github.com/wishmatic/novel-cli/internal/novelai"
 )
 
 func TestNewRegistersTools(t *testing.T) {

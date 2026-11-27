@@ -10,8 +10,8 @@ import (
 	"testing"
 
 	"github.com/vmihailenco/msgpack/v5"
-	"github.com/wishmatic/novel-mcp/internal/format"
-	"github.com/wishmatic/novel-mcp/internal/novelai"
+	"github.com/wishmatic/novel-cli/internal/format"
+	"github.com/wishmatic/novel-cli/internal/novelai"
 )
 
 type requestLog struct {

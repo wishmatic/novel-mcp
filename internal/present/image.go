@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/modelcontextprotocol/go-sdk/mcp"
-	"github.com/wishmatic/novel-mcp/internal/format"
+	"github.com/wishmatic/novel-cli/internal/format"
 )
 
 // A bounded copy of an image rides in the tool result, so it gets a size budget. WebP is what it is shrunk to because

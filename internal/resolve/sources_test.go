@@ -9,7 +9,7 @@ import (
 	"sync/atomic"
 	"testing"
 
-	"github.com/wishmatic/novel-mcp/internal/sourcemap"
+	"github.com/wishmatic/novel-cli/internal/sourcemap"
 )
 
 func newMappedResolver(t *testing.T, spec string) *Client {

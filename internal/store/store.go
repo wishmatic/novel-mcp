@@ -10,7 +10,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/wishmatic/novel-mcp/internal/format"
+	"github.com/wishmatic/novel-cli/internal/format"
 	"go.uber.org/zap"
 )
 

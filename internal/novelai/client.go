@@ -11,7 +11,7 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/wishmatic/novel-mcp/internal/utils"
+	"github.com/wishmatic/novel-cli/internal/utils"
 )
 
 const (

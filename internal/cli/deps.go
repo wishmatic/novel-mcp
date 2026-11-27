@@ -7,11 +7,11 @@ import (
 	"os"
 	"strings"
 
-	"github.com/wishmatic/novel-mcp/internal/config"
-	"github.com/wishmatic/novel-mcp/internal/credential"
-	"github.com/wishmatic/novel-mcp/internal/novelai"
-	"github.com/wishmatic/novel-mcp/internal/resolve"
-	"github.com/wishmatic/novel-mcp/internal/sourcemap"
+	"github.com/wishmatic/novel-cli/internal/config"
+	"github.com/wishmatic/novel-cli/internal/credential"
+	"github.com/wishmatic/novel-cli/internal/novelai"
+	"github.com/wishmatic/novel-cli/internal/resolve"
+	"github.com/wishmatic/novel-cli/internal/sourcemap"
 )
 
 type Deps struct {

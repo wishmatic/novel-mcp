@@ -13,10 +13,10 @@ import (
 
 	"github.com/vmihailenco/msgpack/v5"
 
-	"github.com/wishmatic/novel-mcp/internal/cli"
-	"github.com/wishmatic/novel-mcp/internal/format"
-	"github.com/wishmatic/novel-mcp/internal/novelai"
-	"github.com/wishmatic/novel-mcp/internal/resolve"
+	"github.com/wishmatic/novel-cli/internal/cli"
+	"github.com/wishmatic/novel-cli/internal/format"
+	"github.com/wishmatic/novel-cli/internal/novelai"
+	"github.com/wishmatic/novel-cli/internal/resolve"
 )
 
 func pngImage(t *testing.T, width, height int) []byte {

@@ -9,7 +9,7 @@ import (
 )
 
 const (
-	keyringService = "novel-mcp"
+	keyringService = "novel-cli"
 	keyringUser    = "novelai-api-key"
 )
 

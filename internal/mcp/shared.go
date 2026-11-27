@@ -5,8 +5,8 @@ import (
 	"fmt"
 
 	"github.com/google/jsonschema-go/jsonschema"
-	"github.com/wishmatic/novel-mcp/internal/format"
-	"github.com/wishmatic/novel-mcp/internal/present"
+	"github.com/wishmatic/novel-cli/internal/format"
+	"github.com/wishmatic/novel-cli/internal/present"
 )
 
 // inlineInput is the sizing of the copy of an image that rides in a tool result, which every tool returning an image

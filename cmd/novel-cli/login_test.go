@@ -5,8 +5,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/wishmatic/novel-mcp/internal/cli"
-	"github.com/wishmatic/novel-mcp/internal/credential"
+	"github.com/wishmatic/novel-cli/internal/cli"
+	"github.com/wishmatic/novel-cli/internal/credential"
 )
 
 func TestLoginStoresATrimmedKeyFromAReader(t *testing.T) {

@@ -7,9 +7,9 @@ import (
 	"strings"
 
 	"github.com/spf13/cobra"
-	"github.com/wishmatic/novel-mcp/internal/cli"
-	"github.com/wishmatic/novel-mcp/internal/format"
-	"github.com/wishmatic/novel-mcp/internal/novelai"
+	"github.com/wishmatic/novel-cli/internal/cli"
+	"github.com/wishmatic/novel-cli/internal/format"
+	"github.com/wishmatic/novel-cli/internal/novelai"
 )
 
 const (

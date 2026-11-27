@@ -7,9 +7,9 @@ import (
 	"testing"
 
 	"github.com/google/jsonschema-go/jsonschema"
-	"github.com/wishmatic/novel-mcp/internal/format"
-	"github.com/wishmatic/novel-mcp/internal/novelai"
-	"github.com/wishmatic/novel-mcp/internal/present"
+	"github.com/wishmatic/novel-cli/internal/format"
+	"github.com/wishmatic/novel-cli/internal/novelai"
+	"github.com/wishmatic/novel-cli/internal/present"
 )
 
 func schemas() map[string]*jsonschema.Schema {

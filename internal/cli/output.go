@@ -5,7 +5,7 @@ import (
 	"io"
 	"strings"
 
-	"github.com/wishmatic/novel-mcp/internal/format"
+	"github.com/wishmatic/novel-cli/internal/format"
 )
 
 func OutputFormat(name string) (format.Format, error) {

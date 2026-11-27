@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	"github.com/modelcontextprotocol/go-sdk/mcp"
-	"github.com/wishmatic/novel-mcp/internal/novelai"
+	"github.com/wishmatic/novel-cli/internal/novelai"
 )
 
 func TestToolAnnotations(t *testing.T) {

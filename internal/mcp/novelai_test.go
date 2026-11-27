@@ -9,8 +9,8 @@ import (
 	"testing"
 
 	"github.com/modelcontextprotocol/go-sdk/mcp"
-	"github.com/wishmatic/novel-mcp/internal/novelai"
-	"github.com/wishmatic/novel-mcp/internal/present"
+	"github.com/wishmatic/novel-cli/internal/novelai"
+	"github.com/wishmatic/novel-cli/internal/present"
 )
 
 func newNovelAIServer(t *testing.T, log *requestLog) *mcp.Server {

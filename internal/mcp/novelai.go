@@ -6,7 +6,7 @@ import (
 
 	"github.com/google/jsonschema-go/jsonschema"
 	"github.com/modelcontextprotocol/go-sdk/mcp"
-	"github.com/wishmatic/novel-mcp/internal/novelai"
+	"github.com/wishmatic/novel-cli/internal/novelai"
 	"go.uber.org/zap"
 )
 

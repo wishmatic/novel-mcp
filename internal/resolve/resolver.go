@@ -10,8 +10,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/wishmatic/novel-mcp/internal/sourcemap"
-	"github.com/wishmatic/novel-mcp/internal/utils"
+	"github.com/wishmatic/novel-cli/internal/sourcemap"
+	"github.com/wishmatic/novel-cli/internal/utils"
 )
 
 const (
@@ -20,7 +20,7 @@ const (
 
 	// Note: Wikimedia and similar sites answer generic or missing agents with a 403.
 
-	userAgent = "neo-mcp/0.1.0 (https://github.com/wishmatic/novel-mcp; bot)"
+	userAgent = "neo-mcp/0.1.0 (https://github.com/wishmatic/novel-cli; bot)"
 )
 
 type ObjectStore interface {

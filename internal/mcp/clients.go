@@ -4,10 +4,10 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/wishmatic/novel-mcp/internal/format"
-	"github.com/wishmatic/novel-mcp/internal/novelai"
-	"github.com/wishmatic/novel-mcp/internal/resolve"
-	"github.com/wishmatic/novel-mcp/internal/store"
+	"github.com/wishmatic/novel-cli/internal/format"
+	"github.com/wishmatic/novel-cli/internal/novelai"
+	"github.com/wishmatic/novel-cli/internal/resolve"
+	"github.com/wishmatic/novel-cli/internal/store"
 	"go.uber.org/zap"
 )
 

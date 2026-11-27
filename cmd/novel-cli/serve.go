@@ -12,8 +12,8 @@ import (
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 
-	"github.com/wishmatic/novel-mcp/internal/cli"
-	"github.com/wishmatic/novel-mcp/internal/server"
+	"github.com/wishmatic/novel-cli/internal/cli"
+	"github.com/wishmatic/novel-cli/internal/server"
 )
 
 const shutdownTimeout = 15 * time.Second

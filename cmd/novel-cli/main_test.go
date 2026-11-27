@@ -4,7 +4,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/wishmatic/novel-mcp/internal/cli"
+	"github.com/wishmatic/novel-cli/internal/cli"
 )
 
 func TestHelpDoesNotRequireCredentials(t *testing.T) {

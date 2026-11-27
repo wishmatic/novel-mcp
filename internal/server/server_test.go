@@ -11,9 +11,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/wishmatic/novel-mcp/internal/auth"
-	"github.com/wishmatic/novel-mcp/internal/config"
-	"github.com/wishmatic/novel-mcp/internal/novelai"
+	"github.com/wishmatic/novel-cli/internal/auth"
+	"github.com/wishmatic/novel-cli/internal/config"
+	"github.com/wishmatic/novel-cli/internal/novelai"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 	"go.uber.org/zap/zaptest/observer"

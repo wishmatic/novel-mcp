@@ -8,8 +8,8 @@ import (
 	"testing"
 
 	"github.com/modelcontextprotocol/go-sdk/mcp"
-	"github.com/wishmatic/novel-mcp/internal/resolve"
-	"github.com/wishmatic/novel-mcp/internal/store"
+	"github.com/wishmatic/novel-cli/internal/resolve"
+	"github.com/wishmatic/novel-cli/internal/store"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 	"go.uber.org/zap/zaptest/observer"
