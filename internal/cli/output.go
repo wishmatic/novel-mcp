@@ -1,0 +1,36 @@
+package cli
+
+import (
+	"fmt"
+	"io"
+	"strings"
+
+	"github.com/wishmatic/novel-mcp/internal/format"
+)
+
+func OutputFormat(deps Deps, name string) (format.Format, error) {
+	if strings.TrimSpace(name) != "" {
+		return format.Parse(name)
+	}
+
+	cfg, err := LoadConfig(deps)
+	if err != nil {
+		return "", err
+	}
+
+	if strings.TrimSpace(cfg.DefaultOutput) == "" {
+		return format.Default, nil
+	}
+
+	return format.Parse(cfg.DefaultOutput)
+}
+
+func WritePaths(w io.Writer, paths []string) error {
+	for _, path := range paths {
+		if _, err := fmt.Fprintln(w, path); err != nil {
+			return fmt.Errorf("write path: %w", err)
+		}
+	}
+
+	return nil
+}

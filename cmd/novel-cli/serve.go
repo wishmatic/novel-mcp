@@ -8,19 +8,31 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/spf13/cobra"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 
-	"github.com/wishmatic/novel-mcp/internal/config"
+	"github.com/wishmatic/novel-mcp/internal/cli"
 	"github.com/wishmatic/novel-mcp/internal/server"
 )
 
 const shutdownTimeout = 15 * time.Second
 
-func main() {
-	cfg, err := config.Load()
+func newServeCommand(deps cli.Deps) *cobra.Command {
+	return &cobra.Command{
+		Use:   "serve",
+		Short: "Run the MCP server",
+		Args:  cobra.NoArgs,
+		RunE: func(cmd *cobra.Command, _ []string) error {
+			return serve(cmd.Context(), deps)
+		},
+	}
+}
+
+func serve(parent context.Context, deps cli.Deps) error {
+	cfg, err := cli.LoadConfig(deps)
 	if err != nil {
-		panic(err)
+		return err
 	}
 
 	log := newLogger(cfg.LogLevel)
@@ -28,11 +40,10 @@ func main() {
 
 	srv, err := server.New(cfg, log)
 	if err != nil {
-		log.Error("server setup failed", zap.Error(err))
-		os.Exit(1)
+		return err
 	}
 
-	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+	ctx, stop := signal.NotifyContext(parent, os.Interrupt, syscall.SIGTERM)
 	defer stop()
 
 	errCh := make(chan error, 1)
@@ -44,7 +55,8 @@ func main() {
 	case err := <-errCh:
 		if err != nil {
 			log.Error("server failed", zap.Error(err))
-			os.Exit(1)
+
+			return err
 		}
 	case <-ctx.Done():
 		log.Info("shutdown signal received")
@@ -58,6 +70,8 @@ func main() {
 	}
 
 	log.Info("server stopped")
+
+	return nil
 }
 
 func newLogger(level string) *zap.Logger {

@@ -35,12 +35,43 @@ docker run -d \
   ghcr.io/wishmatic/novel-mcp:latest
 ```
 
-The MCP endpoint is served at `/mcp`.
+The image runs `novel-cli serve`; the MCP endpoint is served at `/mcp`.
 
 `/data` holds the image store, so bind-mount a host directory there to keep files across container
 replacements; the container runs as uid 65532, so that directory must be writable by it.
 
 All other configuration is optional but strongly recommended; see [.env.example](.env.example).
+
+### Command line
+
+`novel-cli` also generates images without the server:
+
+```sh
+go install github.com/wishmatic/novel-mcp/cmd/novel-cli@latest
+```
+
+Then store your NovelAI key once:
+
+```sh
+novel-cli login
+```
+
+And generate:
+
+```sh
+novel-cli novelai "a cat" --model nai-diffusion-5-full --out ./images
+```
+
+`novel-cli help` lists the commands, and `novel-cli serve` runs the MCP server locally
+(`go run ./cmd/novel-cli serve`). Generated images are written to `--out` (default `.`), in `--format`
+or `OUTPUT_FORMAT`, and are never hosted.
+
+The NovelAI key is resolved from `NOVELAI_API_KEY` (environment or `.env`) first, then from what
+`novel-cli login` stored: the OS keyring, with a user-only file fallback at
+`$XDG_CONFIG_HOME/novel/novelai_api_key` or its platform equivalent. Set
+`NOVEL_CREDENTIAL_BACKEND` to `keyring`, `file`, or `auto` (the default) to pick a backend, and use
+`novel-cli logout` to delete the stored key from both. A key passed as an environment variable is
+much easier to leak, even accidentally, than one in the keyring.
 
 ### Authentication
 

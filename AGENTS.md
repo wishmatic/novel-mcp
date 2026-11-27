@@ -107,9 +107,10 @@ flowchart TD
     resolve --> utils
 ```
 
-`cmd/server`, `internal/server`, and `internal/config` are deliberately left out of the diagram:
-they are wiring and config plumbing, so every edge they own is expected rather than a constraint
-worth drawing. `internal/auth` is omitted too: it has no internal edges.
+`cmd/novel-cli`, `internal/cli`, `internal/server`, and `internal/config` are deliberately left out
+of the diagram: they are wiring and config plumbing, so every edge they own is expected rather than
+a constraint worth drawing. `internal/auth` and `internal/credential` are omitted too: they have no
+internal edges.
 
 ## Comments and Docstrings
 
