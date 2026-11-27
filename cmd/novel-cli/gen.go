@@ -14,6 +14,10 @@ func newGenCommand(deps cli.Deps) *cobra.Command {
 		Use:     "gen",
 		Aliases: []string{"generate"},
 		Short:   "Generate images",
+		Args:    cobra.NoArgs,
+		RunE: func(cmd *cobra.Command, _ []string) error {
+			return cmd.Help()
+		},
 	}
 
 	cmd.AddCommand(newGenImageCommand(deps))
