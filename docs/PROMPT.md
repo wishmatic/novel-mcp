@@ -21,8 +21,8 @@ an image could look like, and use the tool's own description for how each field 
 - Use {{PREFERRED_STEPS}} steps and {{PREFERRED_CFG}} guidance unless the user asks for something
   else.
 - {{STYLE_NOTES}}, for example {{STYLE_EXAMPLE}}.
-- Images come back as WebP unless the server sets `OUTPUT_FORMAT`; pass `format` (`png`, `jpeg`,
-  `jxl`, or `webp`) only when the user wants a different file type.
+- Images come back as WebP; pass `format` (`png`, `jpeg`, `jxl`, or `webp`) only when the user wants
+  a different file type.
 - Every call returns the image's URL as text. Pass `inline: true` to attach the image itself as
   well, in the user's and your audience, so you can see it. The inline copy is shrunk to a
   1024-pixel edge and 1 MiB, which is enough to look at but not to read small text: raise

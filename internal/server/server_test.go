@@ -170,38 +170,6 @@ func TestNewRequiresFilesDir(t *testing.T) {
 	}
 }
 
-func TestNewRejectsInvalidOutputFormat(t *testing.T) {
-	cfg := testConfig(t)
-	cfg.DefaultOutput = "nonsense"
-
-	_, err := New(cfg, zap.NewNop())
-	if err == nil {
-		t.Fatal("New() error = nil, want an error")
-	}
-
-	if !strings.Contains(err.Error(), "OUTPUT_FORMAT") {
-		t.Errorf("error = %q, want it to name OUTPUT_FORMAT", err.Error())
-	}
-
-	for _, want := range []string{"png", "jpeg", "jxl", "webp"} {
-		if !strings.Contains(err.Error(), want) {
-			t.Errorf("error %q does not name %q", err, want)
-		}
-	}
-}
-
-func TestNewAcceptsOutputFormat(t *testing.T) {
-	cfg := testConfig(t)
-	cfg.DefaultOutput = "JXL"
-
-	srv, err := New(cfg, zap.NewNop())
-	if err != nil {
-		t.Fatalf("New() error: %v", err)
-	}
-
-	t.Cleanup(func() { _ = srv.Shutdown(context.Background()) })
-}
-
 func TestNewLogsLocalFilesWarning(t *testing.T) {
 	core, logs := observer.New(zapcore.DebugLevel)
 

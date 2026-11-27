@@ -14,7 +14,7 @@ import (
 
 func schemas() map[string]*jsonschema.Schema {
 	return map[string]*jsonschema.Schema{
-		"novelai": novelaiSchema(format.Default),
+		"novelai": novelaiSchema(),
 	}
 }
 
@@ -84,7 +84,7 @@ func TestSchemasIncludeSharedGenerationFields(t *testing.T) {
 }
 
 func TestNoiseDefaultsToZero(t *testing.T) {
-	noise := novelaiSchema(format.Default).Properties["noise"]
+	noise := novelaiSchema().Properties["noise"]
 	if noise == nil {
 		t.Fatal("novelai: noise property is missing")
 	}
@@ -105,7 +105,7 @@ func TestDimensionsHaveNoDefault(t *testing.T) {
 	}
 }
 
-func TestDenoisingStrengthHasNoDefault(t *testing.T) {
+func TestDenoisingStrengthDefaultsToTheImg2ImgStrength(t *testing.T) {
 	for name, s := range schemas() {
 		prop := s.Properties["denoising_strength"]
 
@@ -113,15 +113,15 @@ func TestDenoisingStrengthHasNoDefault(t *testing.T) {
 			t.Errorf("%s: denoising_strength type = %q, want number", name, prop.Type)
 		}
 
-		if prop.Default != nil {
-			t.Errorf("%s: denoising_strength default = %s, want none: 0 is what an omitted value looks like, and it "+
-				"means different things on the txt2img and img2img paths", name, prop.Default)
+		if string(prop.Default) != "0.75" {
+			t.Errorf("%s: denoising_strength default = %s, want 0.75, the strength an img2img call takes when it "+
+				"names none", name, prop.Default)
 		}
 	}
 }
 
 func TestNovelAIDenoisingStrengthDescribesTheDefault(t *testing.T) {
-	desc := novelaiSchema(format.Default).Properties["denoising_strength"].Description
+	desc := novelaiSchema().Properties["denoising_strength"].Description
 
 	for _, want := range []string{"init image", "0.75"} {
 		if !strings.Contains(desc, want) {
@@ -206,22 +206,11 @@ func TestFormatFlagSchema(t *testing.T) {
 	}
 }
 
-func TestFormatFlagSchemaFollowsConfiguredDefault(t *testing.T) {
-	for _, name := range format.Names() {
-		format, err := format.Parse(name)
-		if err != nil {
-			t.Fatalf("Parse(%q) error: %v", name, err)
-		}
+func TestFormatFlagSchemaFollowsTheWebPDefault(t *testing.T) {
+	prop := novelaiSchema().Properties["format"]
 
-		want := `"` + name + `"`
-
-		for tool, prop := range map[string]*jsonschema.Schema{
-			"novelai": novelaiSchema(format).Properties["format"],
-		} {
-			if string(prop.Default) != want {
-				t.Errorf("%s with default %s: format default = %s, want %s", tool, name, prop.Default, want)
-			}
-		}
+	if string(prop.Default) != `"webp"` {
+		t.Errorf("novelai: format default = %s, want webp", prop.Default)
 	}
 }
 

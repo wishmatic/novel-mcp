@@ -100,42 +100,6 @@ func TestLoadRejectsANonNumericPort(t *testing.T) {
 	}
 }
 
-func TestLoadOutputFormatDefaults(t *testing.T) {
-	unsetEnv(t, "OUTPUT_FORMAT")
-
-	cfg, err := Load()
-	if err != nil {
-		t.Fatalf("Load() error: %v", err)
-	}
-
-	if cfg.DefaultOutput != "webp" {
-		t.Errorf("OutputFormat = %q, want webp", cfg.DefaultOutput)
-	}
-}
-
-func TestLoadOutputFormat(t *testing.T) {
-	tests := map[string]string{
-		"jxl":  "jxl",
-		"jpeg": "jpeg",
-		"JPEG": "JPEG",
-	}
-
-	for value, want := range tests {
-		t.Run(value, func(t *testing.T) {
-			t.Setenv("OUTPUT_FORMAT", value)
-
-			cfg, err := Load()
-			if err != nil {
-				t.Fatalf("Load() error: %v", err)
-			}
-
-			if cfg.DefaultOutput != want {
-				t.Errorf("OutputFormat = %q, want %q", cfg.DefaultOutput, want)
-			}
-		})
-	}
-}
-
 func TestLoadFilesDefaults(t *testing.T) {
 	unsetEnv(t, "PUBLIC_HOST")
 	unsetEnv(t, "FILES_DIR")

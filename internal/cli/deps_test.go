@@ -38,7 +38,7 @@ func TestWithDefaultsKeepsTheProvidedStreams(t *testing.T) {
 }
 
 func TestLoadConfigUsesTheInjectedConfig(t *testing.T) {
-	cfg := config.Config{NovelAIAPIKey: "injected-key", DefaultOutput: "png"}
+	cfg := config.Config{NovelAIAPIKey: "injected-key"}
 
 	got, err := LoadConfig(Deps{Config: cfg})
 	if err != nil {
@@ -52,7 +52,6 @@ func TestLoadConfigUsesTheInjectedConfig(t *testing.T) {
 
 func TestLoadConfigReadsDefaultsFromTheEnvironment(t *testing.T) {
 	t.Setenv("PORT", "")
-	t.Setenv("OUTPUT_FORMAT", "")
 
 	got, err := LoadConfig(Deps{})
 	if err != nil {
@@ -61,9 +60,6 @@ func TestLoadConfigReadsDefaultsFromTheEnvironment(t *testing.T) {
 
 	if got.Port != 8080 {
 		t.Errorf("Port = %d, want the 8080 default", got.Port)
-	}
-	if got.DefaultOutput != "webp" {
-		t.Errorf("DefaultOutput = %q, want the webp default", got.DefaultOutput)
 	}
 }
 
@@ -84,7 +80,7 @@ func TestNovelClientReportsAMissingKey(t *testing.T) {
 	t.Setenv("NOVELAI_API_KEY", "")
 	t.Setenv("PORT", "")
 
-	_, err := NovelClient(Deps{Config: config.Config{DefaultOutput: "webp"}, Credentials: emptyStore{}})
+	_, err := NovelClient(Deps{Config: config.Config{Host: "localhost"}, Credentials: emptyStore{}})
 	if err == nil || !strings.Contains(err.Error(), "novel-cli login") {
 		t.Errorf("NovelClient() error = %v, want it to name novel-cli login", err)
 	}

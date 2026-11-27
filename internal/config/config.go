@@ -15,8 +15,6 @@ type Config struct {
 
 	LogLevel string `env:"LOG_LEVEL" envDefault:"info"`
 
-	DefaultOutput string `env:"OUTPUT_FORMAT" envDefault:"webp"`
-
 	APIKey string `env:"API_KEY"`
 
 	ImageURLMap string `env:"IMAGE_URL_MAP"`

@@ -13,7 +13,6 @@ import (
 	"github.com/modelcontextprotocol/go-sdk/mcp"
 	"github.com/wishmatic/novel-mcp/internal/auth"
 	"github.com/wishmatic/novel-mcp/internal/config"
-	"github.com/wishmatic/novel-mcp/internal/format"
 	mcpServer "github.com/wishmatic/novel-mcp/internal/mcp"
 	"github.com/wishmatic/novel-mcp/internal/novelai"
 	"github.com/wishmatic/novel-mcp/internal/resolve"
@@ -52,11 +51,6 @@ func New(cfg config.Config, log *zap.Logger) (*Server, error) {
 
 	if cfg.FilesDir == "" {
 		return nil, fmt.Errorf("FILES_DIR must not be empty")
-	}
-
-	outputFormat, err := outputFormatFrom(cfg)
-	if err != nil {
-		return nil, err
 	}
 
 	files, err := store.New(store.Config{
@@ -104,11 +98,10 @@ func New(cfg config.Config, log *zap.Logger) (*Server, error) {
 	}
 
 	mcpSrv, err := mcpServer.New(mcpServer.Clients{
-		Log:                 log,
-		NovelAI:             novelaiClient,
-		Store:               files,
-		Resolver:            resolver,
-		DefaultOutputFormat: outputFormat,
+		Log:      log,
+		NovelAI:  novelaiClient,
+		Store:    files,
+		Resolver: resolver,
 	})
 	if err != nil {
 		return nil, fmt.Errorf("build mcp server: %w", err)
@@ -140,19 +133,6 @@ func New(cfg config.Config, log *zap.Logger) (*Server, error) {
 			IdleTimeout:       60 * time.Second,
 		},
 	}, nil
-}
-
-func outputFormatFrom(cfg config.Config) (format.Format, error) {
-	if cfg.DefaultOutput == "" {
-		return format.Default, nil
-	}
-
-	format, err := format.Parse(cfg.DefaultOutput)
-	if err != nil {
-		return "", fmt.Errorf("OUTPUT_FORMAT: %w", err)
-	}
-
-	return format, nil
 }
 
 func (s *Server) Run() error {

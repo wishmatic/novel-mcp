@@ -60,25 +60,23 @@ func testImageJPEG(t *testing.T) []byte {
 }
 
 func TestOutputFormatResolver(t *testing.T) {
-	configured := &Clients{Log: zapNop(), DefaultOutputFormat: format.JXL}
-
 	tests := []struct {
 		name    string
-		h       *Clients
 		flag    string
 		want    format.Format
 		wantErr bool
 	}{
-		{name: "configured default", h: configured, want: format.JXL},
-		{name: "unset default falls back to webp", h: &Clients{Log: zapNop()}, want: format.Default},
-		{name: "flag overrides the default", h: configured, flag: "png", want: format.PNG},
-		{name: "flag alias", h: configured, flag: "jpg", want: format.JPEG},
-		{name: "invalid flag", h: configured, flag: "gif", wantErr: true},
+		{name: "unset falls back to webp", want: format.Default},
+		{name: "flag overrides the default", flag: "png", want: format.PNG},
+		{name: "flag alias", flag: "jpg", want: format.JPEG},
+		{name: "invalid flag", flag: "gif", wantErr: true},
 	}
+
+	h := &Clients{Log: zapNop()}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := tt.h.outputFormat(tt.flag)
+			got, err := h.outputFormat(tt.flag)
 			if tt.wantErr {
 				if err == nil {
 					t.Fatalf("outputFormat(%q) error = nil, want an error", tt.flag)

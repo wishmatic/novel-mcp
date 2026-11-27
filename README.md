@@ -11,8 +11,8 @@ A thin MCP wrapper around NovelAI's image generation API.
     scratch.
   - Without an init image, width and height default to 512. With one, they follow its size.
   - Calls may spend Anlas on the account the key belongs to.
-- Not just PNG; WebP output by default, and JPEG and JXL are supported too!
-  - Adjust default output with `OUTPUT_FORMAT`.
+- Not just PNG; WebP output by default, and JPEG and JXL are supported too: pass `format` per call for
+  a different file type.
 - Every call stores the image and returns its URL as text; pass `inline: true` to attach the image as
   an MCP image block as well, such that a vision-capable agent can see the returned result.
   - The attached copy is shrunk to a size budget the caller can raise or lower per call with
@@ -59,12 +59,17 @@ novel-cli login
 And generate:
 
 ```sh
-novel-cli novelai "a cat" --model nai-diffusion-5-full --out ./images
+novel-cli novelai "a cat" --out ./images
+novel-cli novelai "a cat" --init-image ./photo.png --out ./images
 ```
+
+`--model` defaults to `nai-diffusion-5-full`. To transform an existing image instead of generating
+from scratch, pass `--init-image` with a local path, or `--init-image-url` with an address the
+resolver can read.
 
 `novel-cli help` lists the commands, and `novel-cli serve` runs the MCP server locally
 (`go run ./cmd/novel-cli serve`). Generated images are written to `--out` (default `.`), in `--format`
-or `OUTPUT_FORMAT`, and are never hosted.
+(WebP unless named), and are never hosted.
 
 The NovelAI key is resolved from `NOVELAI_API_KEY` (environment or `.env`) first, then from what
 `novel-cli login` stored: the OS keyring, with a user-only file fallback at

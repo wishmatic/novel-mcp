@@ -47,8 +47,8 @@ func setDefault(props map[string]*jsonschema.Schema, name string, value any) {
 	props[name].Default = raw
 }
 
-func setFormatSchema(s *jsonschema.Schema, def format.Format) {
-	setDefault(s.Properties, "format", def.String())
+func setFormatSchema(s *jsonschema.Schema) {
+	setDefault(s.Properties, "format", format.Default.String())
 	setFormatEnum(s)
 	setInlineDefaults(s)
 }

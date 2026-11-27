@@ -11,7 +11,6 @@ import (
 	"testing"
 
 	"github.com/wishmatic/novel-mcp/internal/cli"
-	"github.com/wishmatic/novel-mcp/internal/config"
 	"github.com/wishmatic/novel-mcp/internal/novelai"
 )
 
@@ -21,7 +20,6 @@ func testDeps(t *testing.T, baseURL string) cli.Deps {
 	return cli.Deps{
 		Client:   newClientAt(t, baseURL),
 		Resolver: newResolver(t),
-		Config:   config.Config{DefaultOutput: "png"},
 	}
 }
 
@@ -40,6 +38,7 @@ func TestNovelAIWritesTheGeneratedImage(t *testing.T) {
 		"--height", "1216",
 		"--cfg-scale", "5",
 		"--seed", "42",
+		"--format", "png",
 		"--out", dir,
 	)
 	if err != nil {
@@ -118,7 +117,7 @@ func TestNovelAIDefaultsMatchTheTool(t *testing.T) {
 	dir := t.TempDir()
 
 	if _, _, err := runCommand(t, testDeps(t, server.URL),
-		"novelai", "a cat", "--model", "nai-diffusion-5-full", "--out", dir,
+		"novelai", "a cat", "--out", dir,
 	); err != nil {
 		t.Fatalf("Execute() error: %v", err)
 	}
@@ -145,6 +144,14 @@ func TestNovelAIDefaultsMatchTheTool(t *testing.T) {
 	}
 	if seed := numberField(t, params, "seed"); seed < 0 {
 		t.Errorf("seed = %v, want a resolved random seed", seed)
+	}
+
+	files, err := filepath.Glob(filepath.Join(dir, "novel-image-*.webp"))
+	if err != nil {
+		t.Fatalf("Glob() error: %v", err)
+	}
+	if len(files) != 1 {
+		t.Fatalf("files = %v, want one default webp image", files)
 	}
 }
 
@@ -193,12 +200,12 @@ func TestNovelAIRunsImg2ImgWithAnInitImage(t *testing.T) {
 	}
 }
 
-func TestNovelAIRejectsAMissingModelBeforeAnyRequest(t *testing.T) {
+func TestNovelAIRejectsAnEmptyModelBeforeAnyRequest(t *testing.T) {
 	server, requests := captureServer(t, http.StatusOK, finalFrame(t, pngImage(t, 64, 64)))
 
-	_, _, err := runCommand(t, testDeps(t, server.URL), "novelai", "a cat")
-	if err == nil || !strings.Contains(err.Error(), "model") {
-		t.Errorf("Execute() error = %v, want a missing-model rejection", err)
+	_, _, err := runCommand(t, testDeps(t, server.URL), "novelai", "a cat", "--model", "")
+	if err == nil || !strings.Contains(err.Error(), "--model") {
+		t.Errorf("Execute() error = %v, want a model rejection", err)
 	}
 
 	assertNoRequest(t, requests)
@@ -213,6 +220,91 @@ func TestNovelAIRejectsAnEmptyPromptBeforeAnyRequest(t *testing.T) {
 	}
 
 	assertNoRequest(t, requests)
+}
+
+func TestNovelAIRunsImg2ImgWithALocalInitImage(t *testing.T) {
+	initImage := pngImage(t, 320, 640)
+
+	path := filepath.Join(t.TempDir(), "init.png")
+	if err := os.WriteFile(path, initImage, 0o600); err != nil {
+		t.Fatalf("WriteFile() error: %v", err)
+	}
+
+	server, requests := captureServer(t, http.StatusOK, finalFrame(t, pngImage(t, 64, 64)))
+
+	if _, _, err := runCommand(t, testDeps(t, server.URL),
+		"novelai", "a cat",
+		"--init-image", path,
+		"--out", t.TempDir(),
+	); err != nil {
+		t.Fatalf("Execute() error: %v", err)
+	}
+
+	body := nextRequest(t, requests).jsonBody(t)
+	if body["action"] != "img2img" {
+		t.Errorf("action = %v, want img2img", body["action"])
+	}
+
+	params := paramsOf(t, body)
+	if params["image"] != base64.StdEncoding.EncodeToString(initImage) {
+		t.Error("image is not the local file's raw base64")
+	}
+
+	if got := numberField(t, params, "width"); got != 320 {
+		t.Errorf("width = %v, want the init image's 320", got)
+	}
+	if got := numberField(t, params, "height"); got != 640 {
+		t.Errorf("height = %v, want the init image's 640", got)
+	}
+}
+
+func TestNovelAIRejectsBothInitImageForms(t *testing.T) {
+	server, requests := captureServer(t, http.StatusOK, finalFrame(t, pngImage(t, 64, 64)))
+
+	_, _, err := runCommand(t, testDeps(t, server.URL),
+		"novelai", "a cat",
+		"--init-image", "/tmp/init.png",
+		"--init-image-url", "https://example.com/init.png",
+		"--out", t.TempDir(),
+	)
+	if err == nil || !strings.Contains(err.Error(), "only one of") {
+		t.Errorf("Execute() error = %v, want the two init image forms refused", err)
+	}
+
+	assertNoRequest(t, requests)
+}
+
+func TestNovelAIReportsAMissingInitImageFile(t *testing.T) {
+	server, requests := captureServer(t, http.StatusOK, finalFrame(t, pngImage(t, 64, 64)))
+
+	missing := filepath.Join(t.TempDir(), "absent.png")
+
+	_, _, err := runCommand(t, testDeps(t, server.URL),
+		"novelai", "a cat", "--init-image", missing, "--out", t.TempDir(),
+	)
+	if err == nil || !strings.Contains(err.Error(), "--init-image") {
+		t.Errorf("Execute() error = %v, want the missing file named", err)
+	}
+
+	assertNoRequest(t, requests)
+}
+
+func TestNovelAIHelpAdvertisesItsDefaults(t *testing.T) {
+	out, _, err := runCommand(t, testDeps(t, "http://127.0.0.1:1"), "novelai", "--help")
+	if err != nil {
+		t.Fatalf("Execute() error: %v", err)
+	}
+
+	for _, want := range []string{
+		`(default "` + defaultModel + `")`,
+		"(default 0.75)",
+		`(default "webp")`,
+		`(default "` + novelai.DefaultSampler + `")`,
+	} {
+		if !strings.Contains(out, want) {
+			t.Errorf("help output does not contain %q:\n%s", want, out)
+		}
+	}
 }
 
 func TestNovelAIRejectsAMissingKeyBeforeAnyRequest(t *testing.T) {

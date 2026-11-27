@@ -8,21 +8,12 @@ import (
 	"github.com/wishmatic/novel-mcp/internal/format"
 )
 
-func OutputFormat(deps Deps, name string) (format.Format, error) {
-	if strings.TrimSpace(name) != "" {
-		return format.Parse(name)
-	}
-
-	cfg, err := LoadConfig(deps)
-	if err != nil {
-		return "", err
-	}
-
-	if strings.TrimSpace(cfg.DefaultOutput) == "" {
+func OutputFormat(name string) (format.Format, error) {
+	if strings.TrimSpace(name) == "" {
 		return format.Default, nil
 	}
 
-	return format.Parse(cfg.DefaultOutput)
+	return format.Parse(name)
 }
 
 func WritePaths(w io.Writer, paths []string) error {

@@ -17,16 +17,10 @@ type Clients struct {
 	NovelAI  *novelai.Client
 	Store    *store.Client
 	Resolver *resolve.Client
-
-	DefaultOutputFormat format.Format
 }
 
 func (c *Clients) outputFormat(name string) (format.Format, error) {
 	if name == "" {
-		if c.DefaultOutputFormat != "" {
-			return c.DefaultOutputFormat, nil
-		}
-
 		return format.Default, nil
 	}
 

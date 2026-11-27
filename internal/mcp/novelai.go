@@ -6,7 +6,6 @@ import (
 
 	"github.com/google/jsonschema-go/jsonschema"
 	"github.com/modelcontextprotocol/go-sdk/mcp"
-	"github.com/wishmatic/novel-mcp/internal/format"
 	"github.com/wishmatic/novel-mcp/internal/novelai"
 	"go.uber.org/zap"
 )
@@ -28,7 +27,7 @@ func registerNovelAI(srv *mcp.Server, c *Clients) {
 			"scratch; the service downloads it (following redirects). Without an init image, width and height default " +
 			"to 512. With one, they default to the init image's own size, and when only one of them is given, the " +
 			"other keeps the init image's aspect ratio. Calls may spend Anlas on your NovelAI account.",
-		InputSchema: novelaiSchema(c.DefaultOutputFormat),
+		InputSchema: novelaiSchema(),
 		Annotations: imageGenerationAnnotations(),
 	}, c.novelai)
 }
@@ -109,7 +108,7 @@ func novelaiGenerateRequest(in novelaiInput, initImage []byte) novelai.GenerateR
 	}
 }
 
-func novelaiSchema(def format.Format) *jsonschema.Schema {
+func novelaiSchema() *jsonschema.Schema {
 	s, err := jsonschema.For[novelaiInput](nil)
 	if err != nil {
 		panic(fmt.Sprintf("novelai: infer input schema: %v", err))
@@ -118,7 +117,8 @@ func novelaiSchema(def format.Format) *jsonschema.Schema {
 	setGenerationDefaults(s)
 	setDefault(s.Properties, "sampler_name", novelai.DefaultSampler)
 	setDefault(s.Properties, "noise", 0.0)
-	setFormatSchema(s, def)
+	setDefault(s.Properties, "denoising_strength", 0.75)
+	setFormatSchema(s)
 
 	s.Properties["sampler_name"].Description = "the NovelAI sampler to use; defaults to " + novelai.DefaultSampler
 	s.Properties["width"].Description = "output width in pixels; defaults to 512 without an init image, or to the init " +
