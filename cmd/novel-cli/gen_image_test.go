@@ -29,7 +29,7 @@ func TestNovelAIWritesTheGeneratedImage(t *testing.T) {
 	dir := t.TempDir()
 
 	out, _, err := runCommand(t, testDeps(t, server.URL),
-		"novelai", "a", "cat",
+		"gen", "image", "a", "cat",
 		"--model", "nai-diffusion-5-full",
 		"--negative-prompt", "bad",
 		"--sampler-name", "k_dpmpp_2m",
@@ -117,7 +117,7 @@ func TestNovelAIDefaultsMatchTheTool(t *testing.T) {
 	dir := t.TempDir()
 
 	if _, _, err := runCommand(t, testDeps(t, server.URL),
-		"novelai", "a cat", "--out", dir,
+		"gen", "image", "a cat", "--out", dir,
 	); err != nil {
 		t.Fatalf("Execute() error: %v", err)
 	}
@@ -167,7 +167,7 @@ func TestNovelAIRunsImg2ImgWithAnInitImage(t *testing.T) {
 	dir := t.TempDir()
 
 	if _, _, err := runCommand(t, testDeps(t, server.URL),
-		"novelai", "a cat",
+		"gen", "image", "a cat",
 		"--model", "nai-diffusion-5-full",
 		"--init-image-url", input.URL+"/image.png",
 		"--out", dir,
@@ -203,7 +203,7 @@ func TestNovelAIRunsImg2ImgWithAnInitImage(t *testing.T) {
 func TestNovelAIRejectsAnEmptyModelBeforeAnyRequest(t *testing.T) {
 	server, requests := captureServer(t, http.StatusOK, finalFrame(t, pngImage(t, 64, 64)))
 
-	_, _, err := runCommand(t, testDeps(t, server.URL), "novelai", "a cat", "--model", "")
+	_, _, err := runCommand(t, testDeps(t, server.URL), "gen", "image", "a cat", "--model", "")
 	if err == nil || !strings.Contains(err.Error(), "--model") {
 		t.Errorf("Execute() error = %v, want a model rejection", err)
 	}
@@ -214,7 +214,7 @@ func TestNovelAIRejectsAnEmptyModelBeforeAnyRequest(t *testing.T) {
 func TestNovelAIRejectsAnEmptyPromptBeforeAnyRequest(t *testing.T) {
 	server, requests := captureServer(t, http.StatusOK, finalFrame(t, pngImage(t, 64, 64)))
 
-	_, _, err := runCommand(t, testDeps(t, server.URL), "novelai", "   ", "--model", "m")
+	_, _, err := runCommand(t, testDeps(t, server.URL), "gen", "image", "   ", "--model", "m")
 	if err == nil || !strings.Contains(err.Error(), "prompt is empty") {
 		t.Errorf("Execute() error = %v, want an empty-prompt rejection", err)
 	}
@@ -233,7 +233,7 @@ func TestNovelAIRunsImg2ImgWithALocalInitImage(t *testing.T) {
 	server, requests := captureServer(t, http.StatusOK, finalFrame(t, pngImage(t, 64, 64)))
 
 	if _, _, err := runCommand(t, testDeps(t, server.URL),
-		"novelai", "a cat",
+		"gen", "image", "a cat",
 		"--init-image", path,
 		"--out", t.TempDir(),
 	); err != nil {
@@ -262,7 +262,7 @@ func TestNovelAIRejectsBothInitImageForms(t *testing.T) {
 	server, requests := captureServer(t, http.StatusOK, finalFrame(t, pngImage(t, 64, 64)))
 
 	_, _, err := runCommand(t, testDeps(t, server.URL),
-		"novelai", "a cat",
+		"gen", "image", "a cat",
 		"--init-image", "/tmp/init.png",
 		"--init-image-url", "https://example.com/init.png",
 		"--out", t.TempDir(),
@@ -280,7 +280,7 @@ func TestNovelAIReportsAMissingInitImageFile(t *testing.T) {
 	missing := filepath.Join(t.TempDir(), "absent.png")
 
 	_, _, err := runCommand(t, testDeps(t, server.URL),
-		"novelai", "a cat", "--init-image", missing, "--out", t.TempDir(),
+		"gen", "image", "a cat", "--init-image", missing, "--out", t.TempDir(),
 	)
 	if err == nil || !strings.Contains(err.Error(), "--init-image") {
 		t.Errorf("Execute() error = %v, want the missing file named", err)
@@ -290,7 +290,7 @@ func TestNovelAIReportsAMissingInitImageFile(t *testing.T) {
 }
 
 func TestNovelAIHelpAdvertisesItsDefaults(t *testing.T) {
-	out, _, err := runCommand(t, testDeps(t, "http://127.0.0.1:1"), "novelai", "--help")
+	out, _, err := runCommand(t, testDeps(t, "http://127.0.0.1:1"), "gen", "image", "--help")
 	if err != nil {
 		t.Fatalf("Execute() error: %v", err)
 	}
@@ -323,7 +323,7 @@ func TestNovelAIRejectsAMissingKeyBeforeAnyRequest(t *testing.T) {
 	defer input.Close()
 
 	_, _, err := runCommand(t, cli.Deps{Credentials: &fakeStore{}},
-		"novelai", "a cat",
+		"gen", "image", "a cat",
 		"--model", "nai-diffusion-5-full",
 		"--init-image-url", input.URL+"/image.png",
 		"--out", t.TempDir(),
@@ -344,7 +344,7 @@ func TestNovelAIReportsAnUpstreamError(t *testing.T) {
 	dir := t.TempDir()
 
 	_, _, err := runCommand(t, testDeps(t, server.URL),
-		"novelai", "a cat", "--model", "m", "--out", dir,
+		"gen", "image", "a cat", "--model", "m", "--out", dir,
 	)
 	if err == nil || !strings.Contains(err.Error(), "500") || !strings.Contains(err.Error(), "boom") {
 		t.Errorf("Execute() error = %v, want the upstream status and body", err)
@@ -358,7 +358,7 @@ func TestNovelAIReportsAMalformedStream(t *testing.T) {
 	dir := t.TempDir()
 
 	_, _, err := runCommand(t, testDeps(t, server.URL),
-		"novelai", "a cat", "--model", "m", "--out", dir,
+		"gen", "image", "a cat", "--model", "m", "--out", dir,
 	)
 	if err == nil || !strings.Contains(err.Error(), "decode frame") {
 		t.Errorf("Execute() error = %v, want a malformed-stream failure", err)
@@ -372,7 +372,7 @@ func TestNovelAIWritesTheRequestedFormat(t *testing.T) {
 	dir := t.TempDir()
 
 	if _, _, err := runCommand(t, testDeps(t, server.URL),
-		"novelai", "a cat", "--model", "m", "--format", "webp", "--out", dir,
+		"gen", "image", "a cat", "--model", "m", "--format", "webp", "--out", dir,
 	); err != nil {
 		t.Fatalf("Execute() error: %v", err)
 	}

@@ -32,7 +32,7 @@ func newRoot(deps cli.Deps) *cobra.Command {
 
 	root.AddCommand(
 		newServeCommand(deps),
-		newNovelAICommand(deps),
+		newGenCommand(deps),
 		newLoginCommand(deps),
 		newLogoutCommand(deps),
 	)

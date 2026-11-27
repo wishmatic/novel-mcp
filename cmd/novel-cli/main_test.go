@@ -13,7 +13,7 @@ func TestHelpDoesNotRequireCredentials(t *testing.T) {
 		t.Fatalf("Execute() error: %v", err)
 	}
 
-	for _, command := range []string{"serve", "novelai", "login", "logout"} {
+	for _, command := range []string{"serve", "gen", "login", "logout"} {
 		if !strings.Contains(out, command) {
 			t.Errorf("help output does not mention %q:\n%s", command, out)
 		}
@@ -21,12 +21,12 @@ func TestHelpDoesNotRequireCredentials(t *testing.T) {
 }
 
 func TestHelpForASubcommand(t *testing.T) {
-	out, _, err := runCommand(t, cli.Deps{}, "help", "novelai")
+	out, _, err := runCommand(t, cli.Deps{}, "help", "gen", "image")
 	if err != nil {
 		t.Fatalf("Execute() error: %v", err)
 	}
 
-	if !strings.Contains(out, "novel-cli novelai") {
-		t.Errorf("help output = %q, want the novelai usage", out)
+	if !strings.Contains(out, "novel-cli gen image") {
+		t.Errorf("help output = %q, want the gen image usage", out)
 	}
 }

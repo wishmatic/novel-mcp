@@ -20,7 +20,7 @@ const (
 	defaultDenoisingStrength = 0.75
 )
 
-func newNovelAICommand(deps cli.Deps) *cobra.Command {
+func newGenImageCommand(deps cli.Deps) *cobra.Command {
 	var (
 		model             string
 		negativePrompt    string
@@ -39,7 +39,7 @@ func newNovelAICommand(deps cli.Deps) *cobra.Command {
 	)
 
 	cmd := &cobra.Command{
-		Use:   "novelai <prompt...>",
+		Use:   "image <prompt...>",
 		Short: "Generate an image through NovelAI",
 		Args:  cobra.MinimumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
@@ -121,15 +121,6 @@ func newNovelAICommand(deps cli.Deps) *cobra.Command {
 	cmd.Flags().StringVar(&out, "out", ".", "directory for generated images")
 
 	return cmd
-}
-
-func promptFromArgs(args []string) (string, error) {
-	prompt := strings.TrimSpace(strings.Join(args, " "))
-	if prompt == "" {
-		return "", fmt.Errorf("prompt is empty")
-	}
-
-	return prompt, nil
 }
 
 func readInitImage(cmd *cobra.Command, deps cli.Deps, path, address string) ([]byte, error) {

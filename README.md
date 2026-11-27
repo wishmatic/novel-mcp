@@ -59,13 +59,13 @@ novel-cli login
 And generate:
 
 ```sh
-novel-cli novelai "a cat" --out ./images
-novel-cli novelai "a cat" --init-image ./photo.png --out ./images
+novel-cli gen image "a cat" --out ./images
+novel-cli gen image "a cat" --init-image ./photo.png --out ./images
 ```
 
-`--model` defaults to `nai-diffusion-5-full`. To transform an existing image instead of generating
-from scratch, pass `--init-image` with a local path, or `--init-image-url` with an address the
-resolver can read.
+`gen` also answers to `generate`. `--model` defaults to `nai-diffusion-5-full`. To transform an
+existing image instead of generating from scratch, pass `--init-image` with a local path, or
+`--init-image-url` with an address the resolver can read.
 
 `novel-cli help` lists the commands, and `novel-cli serve` runs the MCP server locally
 (`go run ./cmd/novel-cli serve`). Generated images are written to `--out` (default `.`), in `--format`
